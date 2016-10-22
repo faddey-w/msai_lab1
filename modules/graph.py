@@ -85,6 +85,14 @@ class Graph:
                 for val in out_values
             ]
 
+    def get_incoming(self, node):
+        node_value = self[node].value
+        return [
+            self[e.start_node]
+            for e in self.edges
+            if e.end_node == node_value
+        ]
+
     def __getitem__(self, value):
         if isinstance(value, Node):
             value = value.value

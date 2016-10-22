@@ -1,4 +1,4 @@
-.py[oc]
+*.py[oc]
 .DS_Store
 .idea
 *.log
