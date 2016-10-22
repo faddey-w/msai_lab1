@@ -27,6 +27,9 @@ class Edge(namedtuple('GraphEdge', 'start_node end_node is_oriented weights')):
                      tuple(self.weights)))
 
 
+SearchNode = namedtuple('SearchNode', 'graph_node edge parent_node depth')
+
+
 class Graph:
 
     def __init__(self, nodes, edges):
@@ -92,26 +95,32 @@ class Graph:
 
 
 def graph_traverse_algorithm(queue_strategy):
-    def traverse_graph(graph, start_node):
+    def traverse_graph(graph, start_node, limit_depth=float('inf')):
         if start_node not in graph:
             return
         start_node = graph[start_node]
-        queue = [([], start_node)]
+        queue = [SearchNode(start_node, None, None, 0)]
         while queue:
-            path, next_node = queue.pop(0)
-            yield path, next_node
-            paths_and_next_nodes = [
-                (path + [edge], node)
-                for edge, node in graph.get_outgoing(next_node, with_edges=True)
+            search_node = queue.pop(0)
+            yield search_node
+            next_depth = search_node.depth + 1
+            if next_depth > limit_depth:
+                continue
+            next_nodes = [
+                SearchNode(n, e, search_node, next_depth)
+                for e, n in graph.get_outgoing(
+                    search_node.graph_node, with_edges=True
+                )
             ]
-            queue_strategy(queue, paths_and_next_nodes)
+            queue_strategy(queue, next_nodes)
     return traverse_graph
 
 
 def graph_visit_algorithm(traverse_algorithm):
     def visit_graph(graph, start_node, stop_node):
         visited_nodes = []
-        for path, node in traverse_algorithm(graph, start_node):
+        for search_node in traverse_algorithm(graph, start_node):
+            node = search_node.graph_node
             if node not in visited_nodes:
                 visited_nodes.append(node)
             if node == stop_node:
@@ -122,21 +131,26 @@ def graph_visit_algorithm(traverse_algorithm):
 
 def graph_search_algorithm(traverse_algorithm):
     def search_in_graph(graph, start_node, target_node):
-        for path, node in traverse_algorithm(graph, start_node):
-            if node == target_node:
-                return path
+        for search_node in traverse_algorithm(graph, start_node):
+            if search_node.graph_node == target_node:
+                reversed_path = []
+                sn = search_node
+                while sn is not None:
+                    reversed_path.append(sn.edge)
+                    sn = sn.parent_node
+                return reversed_path[::-1]
     return search_in_graph
 
 
-def breadth_first_strategy(queue, paths_and_nodes):
-    queue.extend(paths_and_nodes)
+def breadth_first_strategy(queue, search_nodes):
+    queue.extend(search_nodes)
 breadth_first_traverse = graph_traverse_algorithm(breadth_first_strategy)
 breadth_first_search_demo = graph_visit_algorithm(breadth_first_traverse)
 breadth_first_search = graph_search_algorithm(breadth_first_traverse)
 
 
-def depth_first_strategy(queue, paths_and_nodes):
-    queue[0:0] = paths_and_nodes
+def depth_first_strategy(queue, search_nodes):
+    queue[0:0] = search_nodes
 depth_first_traverse = graph_traverse_algorithm(depth_first_strategy)
 depth_first_search_demo = graph_visit_algorithm(depth_first_traverse)
 depth_first_search = graph_search_algorithm(depth_first_traverse)
