@@ -5,7 +5,7 @@ class Node(namedtuple('GraphNode', 'value weights')):
 
     def __eq__(self, other):
         if isinstance(other, Node):
-            return self.value ==  other.value
+            return self.value == other.value
         else:
             return self.value == other
 
@@ -125,22 +125,22 @@ def graph_traverse_algorithm(queue_strategy):
 
 
 def graph_visit_algorithm(traverse_algorithm):
-    def visit_graph(graph, start_node, stop_node):
+    def visit_graph(graph, start_node, is_goal):
         visited_nodes = []
         for search_node in traverse_algorithm(graph, start_node):
             node = search_node.graph_node
             if node not in visited_nodes:
                 visited_nodes.append(node)
-            if node == stop_node:
+            if is_goal(node):
                 break
         return visited_nodes
     return visit_graph
 
 
 def graph_search_algorithm(traverse_algorithm):
-    def search_in_graph(graph, start_node, target_node):
+    def search_in_graph(graph, start_node, is_goal):
         for search_node in traverse_algorithm(graph, start_node):
-            if search_node.graph_node == target_node:
+            if is_goal(search_node.graph_node):
                 reversed_path = []
                 sn = search_node
                 while sn is not None:

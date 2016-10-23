@@ -34,7 +34,7 @@ def search_demo_script(alhorithm):
             graph, params = load_from_stream(in_stream)
         start_node = int(params[0])
         target_node = int(params[1] or -1)
-        nodes = alhorithm(graph, start_node, target_node)
+        nodes = alhorithm(graph, start_node, lambda node: node == target_node)
         values = [n.value for n in nodes]
         print(*values)
     return main
