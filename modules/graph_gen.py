@@ -13,18 +13,18 @@ import graph
 def build_graph(start_value, transition_functions, max_depth):
     nodes = {start_value: graph.Node(start_value, ())}
     edges = set()
-    front = {start_value}
-    for depth in range(1, max_depth+1):
-        next_front = set()
-        for value in front:
-            for func in transition_functions:
-                next_value = func(value)
-                if next_value in nodes:
-                    continue
-                nodes[next_value] = graph.Node(next_value, ())
-                next_front.add(next_value)
-                edges.add(graph.Edge(value, next_value, True, ()))
-        front = next_front
+
+    def _add_next_recursive(prev_value, depth):
+        if depth > max_depth:
+            return
+        for func in transition_functions:
+            value = func(prev_value)
+            nodes[value] = graph.Node(value, ())
+            edges.add(graph.Edge(prev_value, value, True, ()))
+            _add_next_recursive(value, depth+1)
+
+    _add_next_recursive(start_value, 0)
+
     return graph.Graph(nodes.values(), edges)
 
 
