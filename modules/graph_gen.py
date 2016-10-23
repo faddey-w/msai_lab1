@@ -19,6 +19,8 @@ def build_graph(start_value, transition_functions, max_depth):
             return
         for func in transition_functions:
             value = func(prev_value)
+            if value in nodes:
+                continue
             nodes[value] = graph.Node(value, ())
             edges.add(graph.Edge(prev_value, value, True, ()))
             _add_next_recursive(value, depth+1)
